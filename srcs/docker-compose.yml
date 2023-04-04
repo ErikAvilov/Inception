@@ -1,0 +1,44 @@
+version: '3.3'
+
+services:
+  nginx:
+    container_name: ft_nginx
+    build: ./requirements/nginx
+    ports:
+      - "443:443"
+    networks:
+        - ft_network
+
+  wordpress:
+    container_name: ft_wordpress
+    ports:
+      - "9000:9000"
+    build: ./requirements/wordpress
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: ft_user
+      WORDPRESS_DB_PASSWORD: ft_pass
+      WORDPRESS_DB_NAME: ft_db
+    networks:
+      - ft_network
+
+  db:
+    container_name: ft_database
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ft_root
+      MYSQL_DATABASE: ft_db
+      MYSQL_USER: ft_user
+      MYSQL_PASSWORD: ft_pass
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - ft_network
+
+volumes:
+  db-data:
+
+networks:
+  ft_network:
+
