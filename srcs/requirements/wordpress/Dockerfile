@@ -1,39 +1,32 @@
 FROM debian:buster
 
-RUN apt-get update && apt-get install -y \
-    	wget \
-	curl \
-	bash \
-	php \
-	php-cgi \
-	php-mysql \
-	php-fpm \
-	php-pdo \
-	php-gd php-cli \
-	php-mbstring \
-	redis \
-	php-redis \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+ENV MYSQL_USER=${MYSQL_USER}
+ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
+ENV MYSQL_DATABASE=${MYSQL_DATABASE}
+ENV MYSQL_HOSTNAME=${MYSQL_HOSTNAME}
 
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-  && chmod +x wp-cli.phar \
-  && mv wp-cli.phar /usr/local/bin/wp
+RUN apt-get update -y && \
+	mkdir /run/php && \
+	apt-get install php7.3 php-mysqli php-fpm wget -y
 
-COPY ./conf/wp-config.php /var/www/html/
+RUN mkdir -p /var/www/html && \
+	wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp && \
+	useradd -ms /bin/bash ea
+
+COPY ./tools/wordpress_entrypoint.sh /
 COPY ./conf/www.conf /etc/php/7.3/fpm/pool.d/
-
-COPY ./tools/entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+RUN chmod +x /wordpress_entrypoint.sh
 
 WORKDIR /var/www/html
 
-RUN chown -R www-data:www-data /var/www/html/
-
-VOLUME /var/www/html
-
 EXPOSE 9000
 
-CMD ["/usr/sbin/php-fpm7.3", "-F"]
+ENTRYPOINT ["/wordpress_entrypoint.sh"]
 
+# On a side note, this is the bare minimum required to pass the project
+# If you ever feel the need to tinker inside the container you'll need to install additional stuff
+# like vim to edit the files or whatever you can think of
+# Also i tried putting comments in the conf file but it fucked up the container

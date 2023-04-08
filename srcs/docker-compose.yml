@@ -1,44 +1,89 @@
-version: '3.3'
+version: '3.8'
 
 services:
   nginx:
-    container_name: ft_nginx
+    init: true
+    container_name: nginx
     build: ./requirements/nginx
     ports:
-      - "443:443"
+            - "443:443"
+    restart: always
+    volumes:
+            - wordpress_data:/var/www/html
     networks:
-        - ft_network
+            - ft_network
+
+  mariadb:
+    init: true
+    container_name: mariadb
+    build: 
+        context : ./requirements/mariadb
+        dockerfile : Dockerfile
+        args :
+                - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+                - MYSQL_DATABASE=${MYSQL_DATABASE}
+                - MYSQL_USER=${MYSQL_USER}
+                - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+                - DB_USER=${DB_USER}
+                - DB_PASSWORD=${DB_PASSWORD}
+                - WP_ADMIN=${WP_ADMIN}
+                - WP_ADMIN_PASSWORD=${WP_ADMIN_PASSWORD}
+    env_file:
+        - /home/ea/Bureau/Inception/srcs/.env
+    volumes:
+            - mariadb_data:/var/lib/mysql
+    restart: always
+    networks:
+            - ft_network
 
   wordpress:
-    container_name: ft_wordpress
-    ports:
-      - "9000:9000"
-    build: ./requirements/wordpress
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: ft_user
-      WORDPRESS_DB_PASSWORD: ft_pass
-      WORDPRESS_DB_NAME: ft_db
-    networks:
-      - ft_network
-
-  db:
-    container_name: ft_database
-    image: mysql:5.7
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_ROOT_PASSWORD: ft_root
-      MYSQL_DATABASE: ft_db
-      MYSQL_USER: ft_user
-      MYSQL_PASSWORD: ft_pass
+    container_name: wordpress
+    depends_on:
+            - mariadb
     volumes:
-      - db-data:/var/lib/mysql
+            - wordpress_data:/var/www/html
     networks:
-      - ft_network
+            - ft_network
+    environment :
+                - MYSQL_HOSTNAME=${MYSQL_HOSTNAME} 
+                - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+                - MYSQL_USER=${MYSQL_USER}
+                - MYSQL_DATABASE=${MYSQL_DATABASE}
+                - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+                - WP_ADMIN=${WP_ADMIN}
+                - WP_ADMIN_PASSWORD=${WP_ADMIN_PASSWORD}
+                - WP_URL=${WP_URL}
+                - WP_TITLE=${WP_TITLE}
+                - DB_HOST=${DB_HOST}
+                - DB_USER=${DB_USER}
+                - DB_NAME=${DB_NAME}
+                - DB_PASSWORD=${DB_PASSWORD}
+    build: ./requirements/wordpress
+    restart: always
 
 volumes:
-  db-data:
-
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/ea/Documents/mysql
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/ea/Documents/wordpress
+      o: bind
+    
 networks:
   ft_network:
+        driver: bridge
 
+# init: basically a good habit to add this one, it helps with stability but if you remove it, everything "should" be fine
+# container_name: changes the name of your container, even in docker ps
+# build: specify the path to the Dockerfile with this
+# networks: provides isolation and enables communication between your containers
+# volumes: where your data will be stored (locally)
+# restart: i put it on always, basically if your container doesn't start or crashes, it will just keep restarting
+# args: very important to set that up, this will transmit your .env info into the Dockerfile so you can use it there
+# environment: your .env data will be exported into the environment inside your image (to check that do docker exec -it <container_name> bash)

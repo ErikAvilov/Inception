@@ -1,58 +1,20 @@
-.SILENT:
+all:
+	- @docker-compose -f ./srcs/docker-compose.yml up -d --build
 
-BLACK=\033[30m
-RED=\033[31m
-GREEN=\033[32m
-YELLOW=\033[33m
-BLUE=\033[34m
-PURPLE=\033[35m
-CYAN=\033[36m
-WHITE=\033[37m
-ERASE=\033[2K\r
-RESET=\033[0m
-BOLD=\033[1m
-FAINT=\033[2m
-ITALIC=\033[3m
-UNDERLINE=\033[4m
+up:
+	- @docker-compose -f ./srcs/docker-compose.yml up -d
 
-#--------------------------------------------------------#
-#						--FILES--						 #
-#--------------------------------------------------------#
-
-NAME 	= 
-SRCS	= 
-HEAD	= 
-OBJS	= $(SRCS:.cpp=.o)
-
-#--------------------------------------------------------#
-#				--	SOME OTHER BULLSHIT IDK	--			 #
-#--------------------------------------------------------#
-
-FLAGS	= -Wall -Wextra -Werror -std=c++98
-RM		= rm -f
-CC		= c++
-
-all: ${NAME}
-
-${NAME}: ${OBJS} ${HEAD}
-	c++ ${FLAGS} ${SRCS} -o $(NAME)
-	printf "${ERASE}${BLACK}${CC} ${FLAGS} -c -o ${RESET}${RED}${BOLD}$@${RESET} ${BLACK}${YELLOW}$<${RESET}"
-
-%.o : %.cpp
-	c++ -c $< -o ${<:.cpp=.o}
-	printf "${ERASE}${BLACK}${CC} ${FLAGS} -c -o ${RESET}${RED}${BOLD}$@${RESET} ${BLACK}${YELLOW}$<${RESET}"
-
-#--------------------------------------------------------#
-#					--	 MAKE COMMANDS	--			 	 #
-#--------------------------------------------------------#
+down: 
+	- @docker-compose -f ./srcs/docker-compose.yml down
 
 clean:
-	${RM} ${OBJS}
+	@echo "Cleaning docker containers..."
+	@docker-compose -f srcs/docker-compose.yml down --rmi all
+	@docker system prune --all --force
+	@docker volume prune --force
+	@sudo rm -rf ~/Documents/wordpress/* ~/Documents/mysql/*
 
-fclean:	clean
-	${RM} ${NAME}
-
-re: fclean all
+re: clean all
 
 sus: 
 	@echo "⠀⠀⠀⡯⡯⡾⠝⠘⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⠘⡮⣣⠪⠢⡑⡌"
@@ -76,4 +38,4 @@ sus:
 	@echo "⢀⢂⢑⠀⡂⡃⠅⠊⢄⢑⠠⠑⢕⢕⢝⢮⢺⢕⢟⢮⢊⢢⢱⢄⠃⣇⣞⢞⣞⢾"
 	@echo "⢀⠢⡑⡀⢂⢊⠠⠁⡂⡐⠀⠅⡈⠪⠪⠪⠣⠫⠑⡁⢔⠕⣜⣜⢦⡰⡎⡯⡾⡽"
 
-.PHONY: re all fclean clean sus
+.PHONY: re all down clean sus
