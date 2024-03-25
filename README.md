@@ -1,5 +1,5 @@
 The goal of this project was to dockerize nginx, wordpress and mariadb without fetching dockerhub images.
-Everything had to be handmade, from the Dockerfile installtion to the tiniest details such as a custom conf file for nginx, custom entrypoint for wordpress or instructions for mariadb.
+Everything had to be handmade, from the Dockerfile configurations to the tiniest details such as a custom conf file for nginx, custom entrypoint for wordpress or instructions for mariadb.
 
 As seen in ft_transcendance, usually you can find usable docker images on duckerhub, but the goal of this project was to fully embrace what it is to make one himself,
 not because the school wants to annoy you, but to teach you problem solving.
