@@ -6,3 +6,6 @@ not because the school wants to annoy you, but to teach you problem solving.
 
 You WILL 100% run into issues related to your docker architecture in every docker projects you'll work on, and this project is here to show you a glimpse of how useful it is to tinker not around the images,
 but docker itself.
+
+I won't post the .env file as it is not recommended to do in general, but you can do it yourself and find out how it works.
+Also, this repo contains the most basic Inception you'll find, I posted commentaries pretty much everywhere, some Dockerfiles can be changed in order to make them cleaner, but it is not my priority right now.
